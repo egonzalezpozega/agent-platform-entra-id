@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.google-agents-cli/
+.adk/
+.DS_Store
+.env
+.env.*
+!.env.example
+deployment_metadata.json
+scratch/

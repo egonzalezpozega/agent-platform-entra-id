@@ -1,0 +1,460 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="entra-agent-id-gemini-platform"
+                  title="Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform"
+                  environment="web"
+                  feedback-link="https://github.com/GoogleCloudPlatform/agent-gateway-entra/issues">
+    
+      <google-codelab-step label="Overview" duration="5">
+        <p>Enterprise AI agents require robust identity, authentication, and governance. When agents perform autonomous actions across multi-cloud environments—such as accessing enterprise documents in Google Cloud Storage while being governed by enterprise policies in Microsoft Entra—a unified, secret-free identity architecture is critical.</p>
+<p>This codelab guides you through integrating <strong>Microsoft Entra Agent ID</strong> with <strong>Agent Platform</strong> (using the Agent Development Kit - ADK, Agent Runtime, and Agent Gateway).</p>
+<h2 is-upgraded>What You Will Build</h2>
+<p>In this codelab, you will build and deploy a pure Python ADK agent that:</p>
+<ol type="1">
+<li>Runs inside <strong>Agent Runtime</strong> behind <strong>Agent Gateway Ingress</strong>.</li>
+<li>Obtains a cryptographically verified <strong>Google Agent Runtime SPIFFE assertion</strong>.</li>
+<li>Federates with <strong>Microsoft Entra ID</strong> using the official <strong>Autonomous App OAuth Flow</strong> to acquire an enterprise <strong>Entra Agent ID token</strong>.</li>
+<li>Exchanges the Entra token back with <strong>Google Cloud Workload Identity Federation (WIF / STS)</strong>.</li>
+<li>Accesses, lists, and reads enterprise documents from <strong>Google Cloud Storage</strong> under the fine-grained IAM principal of the Microsoft Entra Agent Identity.</li>
+</ol>
+<h2 is-upgraded>What You Will Learn</h2>
+<ul>
+<li>How the <strong>External Agent Identity</strong> pattern works across Google Cloud and Microsoft Entra.</li>
+<li>How to configure Federated Identity Credentials (FIC) in Microsoft Entra Agent ID without static secrets.</li>
+<li>How the Entra <strong>Token Exchange Flow</strong> and <strong>Google STS WIF</strong> work together.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Architecture &amp; Identity Topology" duration="5">
+        <h2 is-upgraded>The Multi-Cloud Identity Architecture</h2>
+<p>The diagram below illustrates the two primary identity execution paths for AI agents running on Google Cloud:</p>
+<p class="image-container"><img alt="Agent&amp;rsquo;s Own Identity Flow Diagram" src="img/f99049a7d0b836.png"></p>
+<h2 is-upgraded>Choosing Your Identity Flow</h2>
+<ul>
+<li><strong>Flow 1: Native Google Cloud Agent Identity (Top Flow)</strong><ul>
+<li>When agents operate purely within Google Cloud, the agent boots with Agent Runtime&#39;s native cryptographic SPIFFE identity (<code>ID 2 - spiffe://...</code>) and directly requests authorization from Google Cloud IAM. This is the standard, most common flow for native GCP workloads.</li>
+</ul>
+</li>
+<li><strong>Flow 2: Bringing External Agent Identities via Microsoft Entra ID (Bottom Flow - Focus of this Codelab)</strong><ul>
+<li>For enterprise organizations with centralized multi-cloud governance in Microsoft Entra, this codelab focuses on bringing external Agent Identities from <strong>Microsoft Entra Agent ID</strong>. The agent bootstraps on Agent Runtime (<strong>ID 2a</strong>), federates outward to establish its autonomous identity in Microsoft Entra (<strong>ID 2b</strong>), and then federates back into Google Cloud Workload Identity Federation (WIF) so that all Google Cloud IAM decisions (Cloud Storage access) are governed under the Microsoft Entra Agent Identity.</li>
+</ul>
+</li>
+</ul>
+<h2 is-upgraded>Identity Flow Breakdown</h2>
+<ol type="1">
+<li><strong>Bootstrap Runtime Identity (Represented as ID 2a in the flow diagram):</strong><ul>
+<li>Agent Runtime generates a cryptographic SPIFFE OIDC assertion representing the agent instance: <pre><code language="language-text" class="language-text">spiffe://agents.global.org-&lt;org-id&gt;.system.id.goog/
+  resources/aiplatform/projects/&lt;project-num&gt;/
+  locations/&lt;region&gt;/reasoningEngines/&lt;id&gt;
+</code></pre>
+</li>
+</ul>
+</li>
+<li><strong>Entra Autonomous Token Exchange (Represented as ID 2b in the flow diagram):</strong><ul>
+<li><strong>Stage 1 (T1):</strong> The parent <strong>Agent Blueprint</strong> presents the Google SPIFFE assertion to Entra&#39;s <code>/token</code> endpoint with <code>scope=api://AzureADTokenExchange/.default</code> and <code>fmi_path=<AgentIdentityId></code>. Entra validates the Federated Identity Credential (FIC) trust and returns an exchange token T1.</li>
+<li><strong>Stage 2 (TR):</strong> The child <strong>Agent Identity</strong> uses T1 as a client assertion to obtain its autonomous enterprise identity token.</li>
+</ul>
+</li>
+<li><strong>Google STS Workload Identity Federation:</strong><ul>
+<li>The agent presents the Entra ID token to Google Security Token Service (STS). Google STS cryptographically validates the token against Entra&#39;s public OIDC discovery endpoint: <pre><code language="language-text" class="language-text">https://login.microsoftonline.com/&lt;tenant_id&gt;/v2.0
+</code></pre>
+</li>
+</ul>
+</li>
+<li><strong>Target Resource IAM Authorization:</strong><ul>
+<li>Google STS returns short-lived Google Cloud OAuth2 credentials mapped to: <pre><code language="language-text" class="language-text">principal://iam.googleapis.com/projects/&lt;project-num&gt;/
+  locations/global/workloadIdentityPools/entra-agent-pool/
+  subject/&lt;entra-agent-object-id&gt;
+</code></pre>
+</li>
+<li>Google Cloud IAM authorizes Cloud Storage access solely for this Entra principal.</li>
+</ul>
+</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites &amp; Environment Setup" duration="5">
+        <h2 is-upgraded>1. Google Cloud Environment</h2>
+<ul>
+<li>A Google Cloud Project with billing enabled (e.g., <code>my-agent-gateway-project</code>).</li>
+<li><code>gcloud</code> CLI installed and authenticated: <pre><code language="language-bash" class="language-bash">gcloud auth login
+gcloud auth application-default login
+</code></pre>
+</li>
+</ul>
+<h2 is-upgraded>2. Microsoft Entra Tenant</h2>
+<ul>
+<li>Access to a Microsoft Entra ID tenant with the <strong>Microsoft Entra Agent ID (Preview)</strong> feature enabled.</li>
+<li>Permissions to create <strong>Agent Blueprints</strong> and <strong>Agent Identities</strong> (or Application Administrator / Cloud Application Administrator roles).</li>
+</ul>
+<h2 is-upgraded>3. Local Development Tools</h2>
+<ul>
+<li>Python 3.11+</li>
+<li><code>uv</code> fast Python package manager: <pre><code language="language-bash" class="language-bash">curl -LsSf https://astral.sh/uv/install.sh | sh
+</code></pre>
+</li>
+<li>Google <code>agents-cli</code>: <pre><code language="language-bash" class="language-bash">uv tool install google-agents-cli
+</code></pre>
+</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create Microsoft Entra Agent Blueprint &amp; Identity (Manual Setup)" duration="5">
+        <p>In this step, configure Microsoft Entra ID in the Microsoft Entra Admin Center to instantiate the parent Blueprint and the child Agent Identity.</p>
+<h2 is-upgraded>1. Create the Agent Blueprint in Microsoft Entra Admin Center</h2>
+<ol type="1">
+<li>Navigate to <strong>Microsoft Entra Admin Center</strong> → <strong>Agents</strong> → <strong>Agent blueprints</strong>.</li>
+<li>Click <strong>+ New agent blueprint</strong>.</li>
+<li>Set the name to <code>Gemini-Entra-Agent-Blueprint</code>.</li>
+<li>Under <strong>Supported account types</strong>, select <strong>Accounts in this organizational directory only (Single tenant)</strong>.</li>
+<li>Note the generated <strong>Application (client) ID</strong> (e.g. <code>a46680b6-9643-4c22-af5e-e9e7303a6471</code>).</li>
+</ol>
+<h2 is-upgraded>2. Instantiate the Child Agent Identity</h2>
+<ol type="1">
+<li>In the left navigation, select <strong>Agents</strong> → <strong>Agent identities</strong>.</li>
+<li>Click <strong>+ New agent identity</strong>.</li>
+<li>Select <code>Gemini-Entra-Agent-Blueprint</code> as the parent blueprint.</li>
+<li>Name the identity <code>Gemini-Entra-Agent-ID</code>.</li>
+<li>Once created, note the <strong>Object ID</strong> of the Agent Identity (e.g., <code>e5a1e0b3-ed9c-4fa4-84cb-050128d063a8</code>).</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="One-Click Deploy (Google Cloud Components)" duration="5">
+        <p>We provide an automated, one-click deployment solution that handles all Google Cloud components with a single command.</p>
+<p>The deployment script automatically:</p>
+<ol type="1">
+<li>Enables required Google Cloud APIs (<code>aiplatform</code>, <code>iam</code>, <code>sts</code>, <code>storage</code>, <code>networkservices</code>).</li>
+<li>Configures the <strong>Workload Identity Federation (WIF)</strong> Pool and OIDC Provider for your Entra Tenant.</li>
+<li>Provisions demo <strong>Cloud Storage</strong> bucket with enterprise documents.</li>
+<li>Grants fine-grained IAM permissions (<code>roles/storage.objectViewer</code>) to your <strong>Microsoft Entra Agent Identity Object ID</strong>.</li>
+<li>Updates configuration files (<code>.env</code> and <code>agents-cli-manifest.yaml</code>).</li>
+<li>Deploys the agent directly to <strong>Agent Runtime</strong> with <strong>Agent Gateway Ingress</strong>.</li>
+</ol>
+<p>Execute the included automated deployment script:</p>
+<pre><code language="language-bash" class="language-bash">chmod +x scripts/deploy_all.sh
+./scripts/deploy_all.sh
+</code></pre>
+<p>The script will prompt for your IDs if not already set in <code>.env</code>:</p>
+<ul>
+<li>Google Cloud Project ID</li>
+<li>Microsoft Entra Tenant ID</li>
+<li>Microsoft Entra Blueprint Application (Client) ID</li>
+<li>Microsoft Entra Agent Identity Object ID</li>
+</ul>
+<p>Once deployment completes, note the <strong>Reasoning Engine ID</strong> (or Reasoning Engine URI) displayed at the end of the script output.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Configure Federated Identity Credential in Microsoft Entra" duration="5">
+        <p>Now that the agent is deployed on Google Cloud Agent Runtime and you have your <strong>Reasoning Engine ID</strong>, establish the cryptographic trust link between Google Agent Runtime and Microsoft Entra.</p>
+<h2 is-upgraded>1. Collect Google Cloud Identifiers</h2>
+<p>Run the following <code>gcloud</code> commands in your terminal to retrieve your Organization ID, Project Number, and Reasoning Engine ID:</p>
+<pre><code language="language-bash" class="language-bash"># Get your Google Cloud Organization ID
+gcloud projects describe $(gcloud config get-value project) --format=&#34;value(parent.id)&#34;
+
+# Get your Google Cloud Project Number
+gcloud projects describe $(gcloud config get-value project) --format=&#34;value(projectNumber)&#34;
+
+# Get your Reasoning Engine ID
+gcloud ai reasoning-engines list \
+  --region=us-central1 \
+  --project=$(gcloud config get-value project) \
+  --format=&#34;value(name)&#34; \
+  --limit=1 | awk -F&#39;/&#39; &#39;{print $NF}&#39;
+</code></pre>
+<h2 is-upgraded>2. Add Federated Identity Credential (FIC) to the Blueprint</h2>
+<ol type="1">
+<li>In <strong>Microsoft Entra Admin Center</strong>, navigate to <strong>Agents</strong> → <strong>Agent blueprints</strong> and select <code>Gemini-Entra-Agent-Blueprint</code>.</li>
+<li>In the Blueprint overview, select <strong>Certificates &amp; secrets</strong> → <strong>Federated credentials</strong>.</li>
+<li>Click <strong>+ Add credential</strong> and select <strong>Other issuer</strong>.</li>
+<li>Fill in the trust parameters: <ul>
+<li><strong>Issuer:</strong><pre><code language="language-text" class="language-text">https://sts.googleapis.com/v1/organizations/&lt;your-google-org-id&gt;/locations/global/workloadIdentityPools/agents.global.org-&lt;your-google-org-id&gt;.system.id.goog
+</code></pre>
+</li>
+<li><strong>Subject identifier:</strong><pre><code language="language-text" class="language-text">spiffe://agents.global.org-&lt;your-google-org-id&gt;.system.id.goog/resources/aiplatform/projects/&lt;your-project-number&gt;/locations/us-central1/reasoningEngines/&lt;your-reasoning-engine-id&gt;
+</code></pre>
+</li>
+<li><strong>Audience: </strong><code>api://AzureADTokenExchange</code></li>
+<li><strong>Name: </strong><code>GoogleAgentRuntimeTrust</code></li>
+</ul>
+</li>
+<li>Click <strong>Save</strong>.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Understanding Workload Identity Federation &amp; IAM (For Review)" duration="5">
+        <p><strong>Note: </strong><em>For your review only, this is automatically deployed by the script.</em></p>
+<p>The following section explains the underlying Google Cloud WIF configuration provisioned during the automated deployment.</p>
+<h2 is-upgraded>1. Workload Identity Pool</h2>
+<p>A dedicated pool is created to hold federated identities:</p>
+<pre><code language="language-bash" class="language-bash">gcloud iam workload-identity-pools create entra-agent-pool \
+  --location=global \
+  --display-name=&#34;Entra Agent ID Pool&#34; \
+  --description=&#34;Workload Identity Pool for Microsoft Entra Agent ID federation&#34; \
+  --project=$GCP_PROJECT_ID
+</code></pre>
+<h2 is-upgraded>2. OIDC Provider Configuration</h2>
+<p>The provider trusts Microsoft Entra ID&#39;s v2.0 OIDC issuer endpoint:</p>
+<pre><code language="language-bash" class="language-bash">AUDIENCES=&#34;fb60f99c-7a34-4190-8149-302f77469936&#34;
+AUDIENCES+=&#34;,api://AzureADTokenExchange&#34;
+AUDIENCES+=&#34;,https://graph.microsoft.com&#34;
+AUDIENCES+=&#34;,00000003-0000-0000-c000-000000000000&#34;
+AUDIENCES+=&#34;,${ENTRA_CLIENT_ID}&#34;
+AUDIENCES+=&#34;,api://${ENTRA_CLIENT_ID}&#34;
+
+MAPPINGS=&#34;google.subject=assertion.sub&#34;
+MAPPINGS+=&#34;,attribute.tid=assertion.tid&#34;
+MAPPINGS+=&#34;,attribute.oid=assertion.oid&#34;
+MAPPINGS+=&#34;,attribute.appid=assertion.appid&#34;
+MAPPINGS+=&#34;,attribute.agent_id=assertion.sub&#34;
+
+gcloud iam workload-identity-pools providers create-oidc entra-oidc-provider \
+  --workload-identity-pool=entra-agent-pool \
+  --location=global \
+  --display-name=&#34;Microsoft Entra IdP Provider&#34; \
+  --issuer-uri=&#34;https://login.microsoftonline.com/${ENTRA_TENANT_ID}/v2.0&#34; \
+  --allowed-audiences=&#34;${AUDIENCES}&#34; \
+  --attribute-mapping=&#34;${MAPPINGS}&#34; \
+  --attribute-condition=&#34;assertion.tid == &#39;${ENTRA_TENANT_ID}&#39;&#34; \
+  --project=$GCP_PROJECT_ID
+</code></pre>
+<h2 is-upgraded>3. Granular IAM Policy Bindings</h2>
+<p>Permissions are bound strictly to the Entra Agent Principal:</p>
+<pre><code language="language-bash" class="language-bash">POOL_PATH=&#34;projects/${GCP_PROJECT_NUMBER}/locations/global/workloadIdentityPools/entra-agent-pool&#34;
+ENTRA_PRINCIPAL=&#34;principal://iam.googleapis.com/${POOL_PATH}/subject/${ENTRA_AGENT_OBJECT_ID}&#34;
+
+# Cloud Storage Access
+gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
+  --member=&#34;${ENTRA_PRINCIPAL}&#34; \
+  --role=&#34;roles/storage.objectViewer&#34;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Understanding ADK Agent Code &amp; Token Adapters (For Review)" duration="6">
+        <p><strong>Note: </strong><em>For your review only, this is automatically deployed by the script.</em></p>
+<p>The ADK agent implementation includes token exchange modules and custom Google credentials providers.</p>
+<h2 is-upgraded>1. Entra Autonomous Token Exchange (<code>agent/auth/entra_exchange.py</code>)</h2>
+<p>Implements the 2-step Autonomous App Flow specified in Microsoft Entra documentation:</p>
+<pre><code language="language-python" class="language-python">import logging
+from typing import Dict, Any, Optional
+import requests
+
+logger = logging.getLogger(__name__)
+
+def exchange_google_for_entra_token(
+    google_assertion: str,
+    tenant_id: str,
+    client_id: str,
+    agent_identity_id: Optional[str] = None,
+    scope: Optional[str] = None,
+) -&gt; Dict[str, Any]:
+    &#34;&#34;&#34;Exchanges Google SPIFFE assertion for an Entra Agent ID token via Autonomous App Flow.&#34;&#34;&#34;
+    token_url = f&#34;https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token&#34;
+    headers = {
+        &#34;Content-Type&#34;: &#34;application/x-www-form-urlencoded&#34;,
+        &#34;Accept&#34;: &#34;application/json&#34;,
+    }
+
+    # Step 1: Blueprint requests T1 exchange token with fmi_path
+    step1_payload = {
+        &#34;grant_type&#34;: &#34;client_credentials&#34;,
+        &#34;client_id&#34;: client_id,
+        &#34;scope&#34;: &#34;api://AzureADTokenExchange/.default&#34;,
+        &#34;client_assertion_type&#34;: &#34;urn:ietf:params:oauth:client-assertion-type:jwt-bearer&#34;,
+        &#34;client_assertion&#34;: google_assertion,
+    }
+    if agent_identity_id:
+        step1_payload[&#34;fmi_path&#34;] = agent_identity_id
+
+    res1 = requests.post(token_url, data=step1_payload, headers=headers, timeout=10)
+    res1.raise_for_status()
+    t1_token = res1.json()[&#34;access_token&#34;]
+
+    if not agent_identity_id:
+        return res1.json()
+
+    # Step 2: Agent Identity requests resource token using T1
+    effective_scope = scope or &#34;api://AzureADTokenExchange/.default&#34;
+    step2_payload = {
+        &#34;grant_type&#34;: &#34;client_credentials&#34;,
+        &#34;client_id&#34;: agent_identity_id,
+        &#34;scope&#34;: effective_scope,
+        &#34;client_assertion_type&#34;: &#34;urn:ietf:params:oauth:client-assertion-type:jwt-bearer&#34;,
+        &#34;client_assertion&#34;: t1_token,
+    }
+
+    res2 = requests.post(token_url, data=step2_payload, headers=headers, timeout=10)
+    res2.raise_for_status()
+    return res2.json()
+</code></pre>
+<h2 is-upgraded>2. Google STS Token Exchange (<code>agent/auth/google_sts.py</code>)</h2>
+<p>Exchanges the Entra token back with Google STS:</p>
+<pre><code language="language-python" class="language-python">import requests
+
+def exchange_entra_for_google_sts_token(
+    entra_token: str,
+    project_number: str,
+    pool_id: str,
+    provider_id: str,
+) -&gt; dict:
+    &#34;&#34;&#34;Exchanges an Entra ID token for a Google STS access token.&#34;&#34;&#34;
+    sts_url = &#34;https://sts.googleapis.com/v1/token&#34;
+    audience = (
+        f&#34;//iam.googleapis.com/projects/{project_number}/&#34;
+        f&#34;locations/global/workloadIdentityPools/{pool_id}/&#34;
+        f&#34;providers/{provider_id}&#34;
+    )
+
+    payload = {
+        &#34;audience&#34;: audience,
+        &#34;grant_type&#34;: &#34;urn:ietf:params:oauth:grant-type:token-exchange&#34;,
+        &#34;requested_token_type&#34;: &#34;urn:ietf:params:oauth:token-type:access_token&#34;,
+        &#34;scope&#34;: &#34;https://www.googleapis.com/auth/cloud-platform&#34;,
+        &#34;subject_token_type&#34;: &#34;urn:ietf:params:oauth:token-type:jwt&#34;,
+        &#34;subject_token&#34;: entra_token,
+    }
+
+    response = requests.post(sts_url, data=payload, timeout=10)
+    response.raise_for_status()
+    return response.json()
+</code></pre>
+<h2 is-upgraded>3. Custom Google Auth Credentials Provider (<code>agent/auth/credentials.py</code>)</h2>
+<p>Wraps the federation workflow in a standard <code>google.auth.credentials.Credentials</code> object:</p>
+<pre><code language="language-python" class="language-python">import google.auth.credentials
+from google.auth.transport import Request
+
+class EntraFederatedCredentials(google.auth.credentials.Credentials):
+    def refresh(self, request: Request) -&gt; None:
+        # 1. Acquire Google SPIFFE assertion
+        bootstrap_token = get_google_bootstrap_token()
+        
+        # 2. Federate to Microsoft Entra
+        entra_res = exchange_google_for_entra_token(
+            google_assertion=bootstrap_token,
+            tenant_id=settings.entra_tenant_id,
+            client_id=settings.entra_client_id,
+            agent_identity_id=settings.entra_agent_object_id,
+            scope=settings.entra_scope,
+        )
+        
+        # 3. Exchange Entra token with Google STS
+        sts_res = exchange_entra_for_google_sts_token(
+            entra_token=entra_res[&#34;access_token&#34;],
+            project_number=settings.gcp_project_number,
+            pool_id=settings.wif_pool_id,
+            provider_id=settings.wif_provider_id,
+        )
+        self.token = sts_res[&#34;access_token&#34;]
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Test &amp; Verify End-to-End Execution" duration="4">
+        <p>Now invoke the live deployed agent to verify the entire multi-cloud identity flow.</p>
+<h2 is-upgraded>1. Retrieve the Reasoning Engine Endpoint</h2>
+<p>You can obtain the <code>REASONING_ENGINE_URL</code> in either of two ways:</p>
+<ul>
+<li><strong>From the Deployment Output:</strong> At the end of <code>./scripts/deploy_all.sh</code> or <code>agents-cli deploy</code>, the terminal prints the Reasoning Engine URI.</li>
+<li><strong>Programmatically via </strong><strong><code>gcloud</code></strong><strong>:</strong></li>
+</ul>
+<pre><code language="language-bash" class="language-bash">REASONING_ENGINE_ID=$(gcloud ai reasoning-engines list \
+  --region=us-central1 \
+  --project=$GCP_PROJECT_ID \
+  --format=&#34;value(name)&#34; \
+  --limit=1 | awk -F&#39;/&#39; &#39;{print $NF}&#39;)
+
+GCP_PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT_ID \
+  --format=&#34;value(projectNumber)&#34;)
+
+REASONING_ENGINE_URL=&#34;https://us-central1-aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_NUMBER}/locations/us-central1/reasoningEngines/${REASONING_ENGINE_ID}&#34;
+echo &#34;Target Endpoint: $REASONING_ENGINE_URL&#34;
+</code></pre>
+<h2 is-upgraded>2. Run Live Test with <code>agents-cli run</code></h2>
+<pre><code language="language-bash" class="language-bash">agents-cli run \
+  --url &#34;${REASONING_ENGINE_URL}&#34; \
+  --mode adk \
+  &#34;Inspect your active identity, list documents from Cloud Storage, and read &#39;sales_audit_2026.txt&#39;.&#34;
+</code></pre>
+<h2 is-upgraded>3. Expected Agent Output</h2>
+<pre><code language="language-text" class="language-text">[user]: Inspect your active identity, list documents from Cloud Storage, and read &#39;sales_audit_2026.txt&#39;.
+
+[agent_gateway_entra]: Here are the results of your requests:
+
+**Agent Identity Inspection:**
+* Status: Verified
+* Active GCP Principal: principal://iam.googleapis.com/projects/.../workloadIdentityPools/entra-agent-pool/subject/e5a1e0b3-ed9c-4fa4-84cb-050128d063a8
+* Entra Agent Client ID: a46680b6-9643-4c22-af5e-e9e7303a6471
+* Entra Tenant ID: cc2c59dc-7f33-441c-bfac-ec4e73182d0a
+
+**Cloud Storage Documents (GCS):**
+* Bucket: epbgonzalez-agent-gateway-entra-agent-docs
+* Files Listed:
+  - entra_federation_guide.txt
+  - sales_audit_2026.txt
+
+**Document Content (&#39;sales_audit_2026.txt&#39;):**
+&#34;Sales audit summary for Q1 2026: All transactions verified against Microsoft Entra Agent ID governance.&#34;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary &amp; Best Practices" duration="2">
+        <p>Congratulations! You have successfully built and deployed a multi-cloud enterprise AI agent governed by <strong>Microsoft Entra Agent ID</strong> running on <strong>Agent Platform</strong>.</p>
+<h2 is-upgraded>What You Achieved</h2>
+<ul>
+<li><strong>Zero Secret Storage:</strong> Authenticated across Google Cloud and Microsoft Entra entirely via cryptographic OIDC assertions and Workload Identity Federation (RFC 7523 / RFC 8693).</li>
+<li><strong>Centralized Governance:</strong> Governed agent lifecycle and identity within Microsoft Entra ID while deploying on Google Cloud&#39;s enterprise Agent Runtime.</li>
+<li><strong>Strict Least-Privilege IAM:</strong> Google Cloud Storage resources authorized access exclusively to the specific Microsoft Entra Agent Identity Object ID.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

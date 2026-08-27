@@ -1,0 +1,32 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2026-08-27T16:53:11-05:00",
+  "id": "entra-agent-id-gemini-platform",
+  "duration": 47,
+  "title": "Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform",
+  "authors": "Google Cloud \u0026 Microsoft Entra Integration Team",
+  "summary": "Learn how to integrate Microsoft Entra Agent ID with Agent Platform, Agent Runtime, and Agent Gateway for cross-cloud enterprise agent governance.",
+  "source": "entra-agent-id-gemini-platform.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "ai",
+    "security",
+    "multi-cloud"
+  ],
+  "tags": [
+    "adk",
+    "agentgateway",
+    "agentruntime",
+    "cloudstorage",
+    "entraid",
+    "identity"
+  ],
+  "feedback": "https://github.com/GoogleCloudPlatform/agent-gateway-entra/issues",
+  "url": "entra-agent-id-gemini-platform"
+}
