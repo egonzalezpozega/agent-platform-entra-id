@@ -22,11 +22,12 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # 1. Google Agent Identity (ID 2a - Bootstrap Identity)
-    gcp_project_id: str = "epbgonzalez-agent-gateway"
-    gcp_project_number: Optional[str] = "374927797243"
+    gcp_project_id: str = "your-gcp-project-id"
+    gcp_project_number: Optional[str] = "123456789012"
     gcp_region: str = "us-central1"
-    google_agent_identity_sa: str = "entra-agent-runtime-sa@epbgonzalez-agent-gateway.iam.gserviceaccount.com"
+    google_agent_identity_sa: str = "entra-agent-runtime-sa@your-gcp-project-id.iam.gserviceaccount.com"
     google_agent_identity_audience: str = "api://AzureADTokenExchange"
+
 
     # 2. Workload Identity Federation (WIF) Configuration (Google STS)
     wif_pool_id: str = "entra-agent-pool"

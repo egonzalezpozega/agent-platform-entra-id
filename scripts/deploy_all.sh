@@ -17,14 +17,14 @@
 # One-Click Deployment Script for Google Cloud Components
 # ==============================================================================
 # Automatically sets up:
-#   1. Google Cloud APIs (Agent Runtime, WIF, STS, BigQuery, GCS, Agent Gateway)
+#   1. Google Cloud APIs (Agent Runtime, WIF, STS, BigQuery, GCS)
 #   2. Workload Identity Federation (WIF) Pool & Provider for Microsoft Entra ID
-#   3. Demo BigQuery Dataset & Sample Table
-#   4. Demo Cloud Storage Bucket & Sample Files
-#   5. Fine-grained IAM Permissions for the Microsoft Entra Agent Principal
-#   6. Synchronize .env & agents-cli-manifest.yaml
-#   7. Deploy to Agent Runtime via agents-cli with Agent Gateway Ingress
+#   3. Demo Cloud Storage Bucket & Sample Files
+#   4. Fine-grained IAM Permissions for the Microsoft Entra Agent Principal
+#   5. Synchronize .env & agents-cli-manifest.yaml
+#   6. Deploy to Agent Runtime via agents-cli with Agent Identity
 # ==============================================================================
+
 
 set -euo pipefail
 
@@ -87,8 +87,8 @@ gcloud services enable \
   sts.googleapis.com \
   bigquery.googleapis.com \
   storage.googleapis.com \
-  networkservices.googleapis.com \
   --project="$GCP_PROJECT_ID"
+
 
 # 3. Create or Update Workload Identity Pool and Provider
 echo -e "\n${GREEN}[3/7] Configuring Workload Identity Federation (WIF)...${NC}"
@@ -214,31 +214,29 @@ MOCK_AUTH=false
 EOV
 
 cat << EOV > agents-cli-manifest.yaml
-name: agent-gateway-entra
-description: "Entra Agent ID Demo with Agent Gateway and Agent Runtime"
+name: agent-platform-entra-id
+description: "Microsoft Entra Agent ID on Google Cloud Agent Runtime"
 version: "1.4.1"
 agent_directory: agent
 create_params:
   deployment_target: agent_runtime
-  agent_gateway: true
   session_type: none
   cicd_runner: skip
 project: ${GCP_PROJECT_ID}
 region: ${GCP_REGION}
 agent_identity: true
-agent_gateway_ingress: projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/agentGateways/entra-agent-gateway
 update_env_vars: GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_PROJECT_NUMBER=${GCP_PROJECT_NUMBER},GCP_REGION=${GCP_REGION},WIF_POOL_ID=${WIF_POOL_ID},WIF_PROVIDER_ID=${WIF_PROVIDER_ID},ENTRA_TENANT_ID=${ENTRA_TENANT_ID},ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID},ENTRA_AGENT_OBJECT_ID=${ENTRA_AGENT_OBJECT_ID},ENTRA_SCOPE=api://AzureADTokenExchange/.default,DEMO_GCS_BUCKET=${GCS_BUCKET},MOCK_AUTH=false
 EOV
 
 # 7. Deploy to Agent Runtime
-echo -e "\n${GREEN}[7/7] Deploying Agent to Agent Runtime with Agent Gateway Ingress...${NC}"
+echo -e "\n${GREEN}[7/7] Deploying Agent to Agent Runtime with Agent Identity...${NC}"
 agents-cli deploy \
   --deployment-target agent_runtime \
   --project "$GCP_PROJECT_ID" \
   --region "$GCP_REGION" \
   --agent-identity \
-  --agent-gateway-ingress "projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/agentGateways/entra-agent-gateway" \
   --no-confirm-project
+
 
 echo -e "\n${GREEN}====================================================================${NC}"
 echo -e "${GREEN}  One-Click Deployment Complete!                                    ${NC}"

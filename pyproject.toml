@@ -13,11 +13,12 @@
 # limitations under the License.
 
 [project]
-name = "agent-gateway-entra"
+name = "agent-platform-entra-id"
 version = "0.1.0"
-description = "Agent Platform Demo with Agent Gateway and Entra Agent ID"
+description = "Microsoft Entra Agent ID on Google Cloud Agent Runtime"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     "google-auth>=2.29.0",
     "google-cloud-bigquery>=3.20.0",

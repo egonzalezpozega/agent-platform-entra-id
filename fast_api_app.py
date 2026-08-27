@@ -73,8 +73,9 @@ app: FastAPI = get_fast_api_app(
     otel_to_cloud=otel_to_cloud,
     lifespan=lifespan,
 )
-app.title = "agent-gateway-entra"
-app.description = "Entra Agent ID Demo with Agent Gateway and Agent Runtime"
+app.title = "agent-platform-entra-id"
+app.description = "Microsoft Entra Agent ID on Google Cloud Agent Runtime"
+
 
 attach_reasoning_engine_routes(app)
 

@@ -40,7 +40,7 @@ Capabilities:
 """
 
 root_agent = Agent(
-    name="agent_gateway_entra",
+    name="agent_platform_entra_id",
     model=Gemini(
         model=MODEL,
         retry_options=types.HttpRetryOptions(attempts=3),

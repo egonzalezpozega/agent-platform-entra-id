@@ -42,15 +42,15 @@
                   id="entra-agent-id-gemini-platform"
                   title="Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform"
                   environment="web"
-                  feedback-link="https://github.com/GoogleCloudPlatform/agent-gateway-entra/issues">
+                  feedback-link="https://github.com/egonzalezpozega/agent-platform-entra-id/issues">
     
       <google-codelab-step label="Overview" duration="5">
         <p>Enterprise AI agents require robust identity, authentication, and governance. When agents perform autonomous actions across multi-cloud environments—such as accessing enterprise documents in Google Cloud Storage while being governed by enterprise policies in Microsoft Entra—a unified, secret-free identity architecture is critical.</p>
-<p>This codelab guides you through integrating <strong>Microsoft Entra Agent ID</strong> with <strong>Agent Platform</strong> (using the Agent Development Kit - ADK, Agent Runtime, and Agent Gateway).</p>
+<p>This codelab guides you through integrating <strong>Microsoft Entra Agent ID</strong> with <strong>Agent Platform</strong> (using the Agent Development Kit - ADK and Agent Runtime).</p>
 <h2 is-upgraded>What You Will Build</h2>
 <p>In this codelab, you will build and deploy a pure Python ADK agent that:</p>
 <ol type="1">
-<li>Runs inside <strong>Agent Runtime</strong> behind <strong>Agent Gateway Ingress</strong>.</li>
+<li>Runs inside <strong>Agent Runtime</strong> with native <strong>Agent Identity</strong>.</li>
 <li>Obtains a cryptographically verified <strong>Google Agent Runtime SPIFFE assertion</strong>.</li>
 <li>Federates with <strong>Microsoft Entra ID</strong> using the official <strong>Autonomous App OAuth Flow</strong> to acquire an enterprise <strong>Entra Agent ID token</strong>.</li>
 <li>Exchanges the Entra token back with <strong>Google Cloud Workload Identity Federation (WIF / STS)</strong>.</li>
@@ -119,7 +119,7 @@
       <google-codelab-step label="Prerequisites &amp; Environment Setup" duration="5">
         <h2 is-upgraded>1. Google Cloud Environment</h2>
 <ul>
-<li>A Google Cloud Project with billing enabled (e.g., <code>my-agent-gateway-project</code>).</li>
+<li>A Google Cloud Project with billing enabled (e.g., <code>my-agent-entra-project</code>).</li>
 <li><code>gcloud</code> CLI installed and authenticated: <pre><code language="language-bash" class="language-bash">gcloud auth login
 gcloud auth application-default login
 </code></pre>
@@ -170,12 +170,12 @@ gcloud auth application-default login
         <p>We provide an automated, one-click deployment solution that handles all Google Cloud components with a single command.</p>
 <p>The deployment script automatically:</p>
 <ol type="1">
-<li>Enables required Google Cloud APIs (<code>aiplatform</code>, <code>iam</code>, <code>sts</code>, <code>storage</code>, <code>networkservices</code>).</li>
+<li>Enables required Google Cloud APIs (<code>aiplatform</code>, <code>iam</code>, <code>sts</code>, <code>storage</code>).</li>
 <li>Configures the <strong>Workload Identity Federation (WIF)</strong> Pool and OIDC Provider for your Entra Tenant.</li>
 <li>Provisions demo <strong>Cloud Storage</strong> bucket with enterprise documents.</li>
 <li>Grants fine-grained IAM permissions (<code>roles/storage.objectViewer</code>) to your <strong>Microsoft Entra Agent Identity Object ID</strong>.</li>
 <li>Updates configuration files (<code>.env</code> and <code>agents-cli-manifest.yaml</code>).</li>
-<li>Deploys the agent directly to <strong>Agent Runtime</strong> with <strong>Agent Gateway Ingress</strong>.</li>
+<li>Deploys the agent directly to <strong>Agent Runtime</strong> with native <strong>Agent Identity</strong>.</li>
 </ol>
 <p>Execute the included automated deployment script:</p>
 <pre><code language="language-bash" class="language-bash">chmod +x scripts/deploy_all.sh
@@ -431,7 +431,7 @@ echo &#34;Target Endpoint: $REASONING_ENGINE_URL&#34;
 <h2 is-upgraded>3. Expected Agent Output</h2>
 <pre><code language="language-text" class="language-text">[user]: Inspect your active identity, list documents from Cloud Storage, and read &#39;sales_audit_2026.txt&#39;.
 
-[agent_gateway_entra]: Here are the results of your requests:
+[agent_platform_entra_id]: Here are the results of your requests:
 
 **Agent Identity Inspection:**
 * Status: Verified
@@ -440,10 +440,11 @@ echo &#34;Target Endpoint: $REASONING_ENGINE_URL&#34;
 * Entra Tenant ID: cc2c59dc-7f33-441c-bfac-ec4e73182d0a
 
 **Cloud Storage Documents (GCS):**
-* Bucket: epbgonzalez-agent-gateway-entra-agent-docs
+* Bucket: my-agent-entra-docs
 * Files Listed:
   - entra_federation_guide.txt
   - sales_audit_2026.txt
+
 
 **Document Content (&#39;sales_audit_2026.txt&#39;):**
 &#34;Sales audit summary for Q1 2026: All transactions verified against Microsoft Entra Agent ID governance.&#34;

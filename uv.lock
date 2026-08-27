@@ -42,7 +42,7 @@ http-server = [
 ]
 
 [[package]]
-name = "agent-gateway-entra"
+name = "agent-platform-entra-id"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -201,9 +201,9 @@ name = "aiologic"
 version = "0.17.1"
 source = { registry = "http://airlock-proxy.uplink.goog:999/python/artifact-foundry-prod/ah-3p-staging-python/simple/" }
 dependencies = [
-    { name = "sniffio", marker = "(python_full_version < '3.14' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
+    { name = "sniffio", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
     { name = "typing-extensions", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
-    { name = "wrapt", marker = "(python_full_version < '3.14' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
+    { name = "wrapt", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
 ]
 sdist = { url = "http://airlock-proxy.uplink.goog:999/python/artifact-foundry-prod/ah-3p-staging-python/aiologic/aiologic-0.17.1.tar.gz", hash = "sha256:2e1b93b9e88ced318c2a63ad7b382688f40cbfe40e3d42258d49dc9c5aea179d" }
 wheels = [
@@ -565,7 +565,7 @@ name = "culsans"
 version = "0.11.0"
 source = { registry = "http://airlock-proxy.uplink.goog:999/python/artifact-foundry-prod/ah-3p-staging-python/simple/" }
 dependencies = [
-    { name = "aiologic", marker = "(python_full_version < '3.14' and sys_platform == 'darwin') or (python_full_version < '3.14' and sys_platform == 'linux')" },
+    { name = "aiologic", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
     { name = "typing-extensions", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
 ]
 sdist = { url = "http://airlock-proxy.uplink.goog:999/python/artifact-foundry-prod/ah-3p-staging-python/culsans/culsans-0.11.0.tar.gz", hash = "sha256:0b43d0d05dce6106293d114c86e3fb4bfc63088cfe8ff08ed3fe36891447fe33" }

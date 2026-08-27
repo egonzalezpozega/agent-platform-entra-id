@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: agent-gateway-entra
-description: "Entra Agent ID Demo with Agent Gateway and Agent Runtime"
+name: agent-platform-entra-id
+description: "Microsoft Entra Agent ID Demo on Google Cloud Agent Runtime"
 version: "1.4.1"
 agent_directory: agent
 create_params:
   deployment_target: agent_runtime
-  agent_gateway: true
   session_type: none
   cicd_runner: skip
 project: epbgonzalez-agent-gateway
 region: us-central1
 agent_identity: true
-agent_gateway_ingress: projects/epbgonzalez-agent-gateway/locations/us-central1/agentGateways/entra-agent-gateway
 update_env_vars: GCP_PROJECT_ID=epbgonzalez-agent-gateway,GCP_PROJECT_NUMBER=374927797243,GCP_REGION=us-central1,WIF_POOL_ID=entra-agent-pool,WIF_PROVIDER_ID=entra-oidc-provider,ENTRA_TENANT_ID=cc2c59dc-7f33-441c-bfac-ec4e73182d0a,ENTRA_CLIENT_ID=a46680b6-9643-4c22-af5e-e9e7303a6471,ENTRA_AGENT_OBJECT_ID=e5a1e0b3-ed9c-4fa4-84cb-050128d063a8,ENTRA_SCOPE=api://AzureADTokenExchange/.default,DEMO_GCS_BUCKET=epbgonzalez-agent-gateway-entra-agent-docs,MOCK_AUTH=false
+

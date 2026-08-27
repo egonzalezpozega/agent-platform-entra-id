@@ -34,7 +34,7 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 echo -e "${YELLOW}================================================================${NC}"
-echo -e "${YELLOW} Google Cloud Resource Cleanup: Entra Agent ID & Agent Gateway ${NC}"
+echo -e "${YELLOW} Google Cloud Resource Cleanup: Microsoft Entra Agent ID        ${NC}"
 echo -e "${YELLOW}================================================================${NC}"
 
 # Load environment variables if present
@@ -59,13 +59,14 @@ fi
 log_info "Target Project: ${GCP_PROJECT_ID} (Region: ${GCP_REGION})"
 GCP_PROJECT_NUMBER=$(gcloud projects describe "${GCP_PROJECT_ID}" --format="value(projectNumber)" 2>/dev/null || true)
 
-# 1. Delete Deployed Reasoning Engines for agent-gateway-entra
+# 1. Delete Deployed Reasoning Engines
 log_info "Step 1: Checking for deployed Agent Runtime Reasoning Engines..."
 ACCESS_TOKEN=$(gcloud auth print-access-token 2>/dev/null || true)
 if [[ -n "${ACCESS_TOKEN}" ]]; then
-  REASONING_ENGINES_JSON=$(curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}"     "https://${GCP_REGION}-aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/reasoningEngines")
+  REASONING_ENGINES_JSON=$(curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+    "https://${GCP_REGION}-aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/reasoningEngines")
   
-  MATCHING_ENGINES=$(echo "${REASONING_ENGINES_JSON}" | jq -r '.reasoningEngines[]? | select(.displayName=="agent-gateway-entra") | .name' 2>/dev/null || true)
+  MATCHING_ENGINES=$(echo "${REASONING_ENGINES_JSON}" | jq -r '.reasoningEngines[]? | select(.displayName=="agent-platform-entra-id" or .displayName=="agent-gateway-entra") | .name' 2>/dev/null || true)
   
   if [[ -n "${MATCHING_ENGINES}" ]]; then
     for ENGINE_NAME in ${MATCHING_ENGINES}; do
@@ -75,8 +76,9 @@ if [[ -n "${ACCESS_TOKEN}" ]]; then
       log_success "Delete result: ${DELETE_RES}"
     done
   else
-    log_info "No deployed Reasoning Engines found with displayName 'agent-gateway-entra'."
+    log_info "No deployed Reasoning Engines found."
   fi
+
 else
   log_warn "Could not retrieve access token to list Reasoning Engines."
 fi

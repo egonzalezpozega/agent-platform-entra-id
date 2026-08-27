@@ -1,10 +1,10 @@
-summary: Learn how to integrate Microsoft Entra Agent ID with Agent Platform, Agent Runtime, and Agent Gateway for cross-cloud enterprise agent governance.
+summary: Learn how to integrate Microsoft Entra Agent ID with Google Cloud Agent Runtime and Workload Identity Federation for cross-cloud enterprise agent governance.
 id: entra-agent-id-gemini-platform
 categories: AI, Security, Multi-Cloud
-tags: ADK, Agent Runtime, Agent Gateway, Entra ID, Identity, Cloud Storage
+tags: ADK, Agent Runtime, Entra ID, Identity, Cloud Storage, WIF
 status: Published
 authors: Google Cloud & Microsoft Entra Integration Team
-Feedback Link: https://github.com/GoogleCloudPlatform/agent-gateway-entra/issues
+Feedback Link: https://github.com/egonzalezpozega/agent-platform-entra-id/issues
 
 # Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform
 
@@ -13,11 +13,12 @@ Duration: 0:05:00
 
 Enterprise AI agents require robust identity, authentication, and governance. When agents perform autonomous actions across multi-cloud environments—such as accessing enterprise documents in Google Cloud Storage while being governed by enterprise policies in Microsoft Entra—a unified, secret-free identity architecture is critical.
 
-This codelab guides you through integrating **Microsoft Entra Agent ID** with **Agent Platform** (using the Agent Development Kit - ADK, Agent Runtime, and Agent Gateway).
+This codelab guides you through integrating **Microsoft Entra Agent ID** with **Agent Platform** (using the Agent Development Kit - ADK and Agent Runtime).
 
 ### What You Will Build
 In this codelab, you will build and deploy a pure Python ADK agent that:
-1. Runs inside **Agent Runtime** behind **Agent Gateway Ingress**.
+1. Runs inside **Agent Runtime** with native **Agent Identity**.
+
 2. Obtains a cryptographically verified **Google Agent Runtime SPIFFE assertion**.
 3. Federates with **Microsoft Entra ID** using the official **Autonomous App OAuth Flow** to acquire an enterprise **Entra Agent ID token**.
 4. Exchanges the Entra token back with **Google Cloud Workload Identity Federation (WIF / STS)**.
@@ -78,7 +79,7 @@ The diagram below illustrates the two primary identity execution paths for AI ag
 Duration: 0:05:00
 
 ### 1. Google Cloud Environment
-* A Google Cloud Project with billing enabled (e.g., `my-agent-gateway-project`).
+* A Google Cloud Project with billing enabled (e.g., `my-agent-entra-project`).
 * `gcloud` CLI installed and authenticated:
   ```bash
   gcloud auth login
@@ -131,12 +132,13 @@ Duration: 0:05:00
 We provide an automated, one-click deployment solution that handles all Google Cloud components with a single command.
 
 The deployment script automatically:
-1. Enables required Google Cloud APIs (`aiplatform`, `iam`, `sts`, `storage`, `networkservices`).
+1. Enables required Google Cloud APIs (`aiplatform`, `iam`, `sts`, `storage`).
 2. Configures the **Workload Identity Federation (WIF)** Pool and OIDC Provider for your Entra Tenant.
 3. Provisions demo **Cloud Storage** bucket with enterprise documents.
 4. Grants fine-grained IAM permissions (`roles/storage.objectViewer`) to your **Microsoft Entra Agent Identity Object ID**.
 5. Updates configuration files (`.env` and `agents-cli-manifest.yaml`).
-6. Deploys the agent directly to **Agent Runtime** with **Agent Gateway Ingress**.
+6. Deploys the agent directly to **Agent Runtime** with native **Agent Identity**.
+
 
 Execute the included automated deployment script:
 
@@ -436,7 +438,7 @@ agents-cli run \
 ```text
 [user]: Inspect your active identity, list documents from Cloud Storage, and read 'sales_audit_2026.txt'.
 
-[agent_gateway_entra]: Here are the results of your requests:
+[agent_platform_entra_id]: Here are the results of your requests:
 
 **Agent Identity Inspection:**
 * Status: Verified
@@ -445,10 +447,11 @@ agents-cli run \
 * Entra Tenant ID: cc2c59dc-7f33-441c-bfac-ec4e73182d0a
 
 **Cloud Storage Documents (GCS):**
-* Bucket: epbgonzalez-agent-gateway-entra-agent-docs
+* Bucket: my-agent-entra-docs
 * Files Listed:
   - entra_federation_guide.txt
   - sales_audit_2026.txt
+
 
 **Document Content ('sales_audit_2026.txt'):**
 "Sales audit summary for Q1 2026: All transactions verified against Microsoft Entra Agent ID governance."

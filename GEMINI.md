@@ -1,4 +1,5 @@
-# Agent Project Guidelines: Agent Gateway & Entra Agent ID
+# Agent Project Guidelines: Microsoft Entra Agent ID on Google Cloud Agent Runtime
+
 
 ## Mandatory Rules for Agent Development
 
