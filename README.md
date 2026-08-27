@@ -74,14 +74,19 @@ agents-cli run \
 
 ## 📖 Codelab Guide
 
-An interactive step-by-step Codelab is included in [`codelabs/`](file:///Users/epbgonzalez/Development/adk/agent-gateway-entra/codelabs/entra-agent-id-gemini-platform.md):
-- Markdown source: `codelabs/entra-agent-id-gemini-platform.md`
-- Exported HTML: `codelabs/entra-agent-id-gemini-platform/index.html`
+🌐 **Live Hosted Codelab**: [https://egonzalezpozega.github.io/agent-platform-entra-id/](https://egonzalezpozega.github.io/agent-platform-entra-id/)
+
+An interactive step-by-step Codelab is included directly in this repository:
+- **Live URL**: [https://egonzalezpozega.github.io/agent-platform-entra-id/](https://egonzalezpozega.github.io/agent-platform-entra-id/)
+- **Markdown Source**: [`codelabs/entra-agent-id-gemini-platform.md`](file:///Users/epbgonzalez/Development/adk/agent-gateway-entra/codelabs/entra-agent-id-gemini-platform.md)
+- **Exported HTML**: [`docs/index.html`](file:///Users/epbgonzalez/Development/adk/agent-gateway-entra/docs/index.html)
 
 To re-export the codelab using `claat`:
 ```bash
 cd codelabs && claat export entra-agent-id-gemini-platform.md
+cp -r entra-agent-id-gemini-platform/* ../docs/
 ```
+
 
 ---
 
