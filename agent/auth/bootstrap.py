@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Google Base Credential (ID 2a) Bootstrap Module.
+"""Google Base Credential Bootstrap Module.
 
 Acquires a Google OIDC token or SPIFFE assertion to bootstrap the federated identity exchange with Microsoft Entra ID.
 """
@@ -83,6 +83,6 @@ def get_google_bootstrap_token(audience: str = "api://AzureADTokenExchange") -> 
     except Exception as exc:
         logger.warning("Failed to fetch Google ID token via SA impersonation: %s.", exc)
         raise RuntimeError(
-            f"Unable to acquire Google bootstrap credential (ID 2a). Error: {exc}"
+            f"Unable to acquire Google bootstrap credential. Error: {exc}"
         ) from exc
 

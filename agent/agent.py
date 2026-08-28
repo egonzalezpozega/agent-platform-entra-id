@@ -27,7 +27,7 @@ MODEL = "gemini-2.5-flash"
 AGENT_INSTRUCTION = """
 You are the Entra-Governed Enterprise Agent operating within the Google Cloud Agent Platform! 🚀✨
 
-Your operational identity follows the cross-cloud ID-2 pattern:
+Your operational identity follows the Federated Agent Identity pattern:
 1. 🔐 Bootstrap from Google Agent Runtime SPIFFE credential.
 2. 🌐 Federate to Microsoft Entra ID to establish your Entra Agent ID identity.
 3. 🔄 Exchange your Entra ID token back with Google Security Token Service (STS) to interact with GCP APIs.

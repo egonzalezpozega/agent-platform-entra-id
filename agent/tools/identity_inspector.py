@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Identity Inspector Tool for verifying the Entra Agent ID (ID-2) authentication chain."""
+"""Identity Inspector Tool for verifying the Federated Entra Agent Identity authentication chain."""
 
 import logging
 from typing import Dict, Any
@@ -42,7 +42,7 @@ def inspect_agent_identity() -> Dict[str, Any]:
     diagnostics = creds.get_identity_diagnostics()
     result = {
         "status": "verified" if creds.valid else "partially_verified",
-        "pattern": "Agent's Own Identity (ID-2) with Entra",
+        "pattern": "Federated Agent Identity with Entra",
         "gcp_project": settings.gcp_project_id,
         "wif_pool": settings.wif_pool_id,
         "wif_provider": settings.wif_provider_id,

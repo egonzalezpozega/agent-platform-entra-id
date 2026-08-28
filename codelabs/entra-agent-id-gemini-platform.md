@@ -43,20 +43,20 @@ The diagram below illustrates the two primary identity execution paths for AI ag
 ### Choosing Your Identity Flow
 
 * **Flow 1: Native Google Cloud Agent Identity (Top Flow)**
-  * When agents operate purely within Google Cloud, the agent boots with Agent Runtime's native cryptographic SPIFFE identity (`ID 2 - spiffe://...`) and directly requests authorization from Google Cloud IAM. This is the standard, most common flow for native GCP workloads.
+  * When agents operate purely within Google Cloud, the agent boots with Agent Runtime's native cryptographic SPIFFE identity (`spiffe://...`) and directly requests authorization from Google Cloud IAM. This is the standard, most common flow for native GCP workloads.
 * **Flow 2: Bringing External Agent Identities via Microsoft Entra ID (Bottom Flow - Focus of this Codelab)**
-  * For enterprise organizations with centralized multi-cloud governance in Microsoft Entra, this codelab focuses on bringing external Agent Identities from **Microsoft Entra Agent ID**. The agent bootstraps on Agent Runtime (**ID 2a**), federates outward to establish its autonomous identity in Microsoft Entra (**ID 2b**), and then federates back into Google Cloud Workload Identity Federation (WIF) so that all Google Cloud IAM decisions (Cloud Storage access) are governed under the Microsoft Entra Agent Identity.
+  * For enterprise organizations with centralized multi-cloud governance in Microsoft Entra, this codelab focuses on bringing external Agent Identities from **Microsoft Entra Agent ID**. The agent bootstraps on Agent Runtime using its Google assertion, federates outward to establish its autonomous identity in Microsoft Entra, and then federates back into Google Cloud Workload Identity Federation (WIF) so that all Google Cloud IAM decisions (Cloud Storage access) are governed under the Microsoft Entra Agent Identity.
 
 ### Identity Flow Breakdown
 
-1. **Bootstrap Runtime Identity (Represented as ID 2a in the flow diagram):**
+1. **Bootstrap Runtime Identity:**
    * Agent Runtime generates a cryptographic SPIFFE OIDC assertion representing the agent instance:
      ```text
      spiffe://agents.global.org-<org-id>.system.id.goog/
        resources/aiplatform/projects/<project-num>/
        locations/<region>/reasoningEngines/<id>
      ```
-2. **Entra Autonomous Token Exchange (Represented as ID 2b in the flow diagram):**
+2. **Entra Autonomous Token Exchange (Federated Agent Identity):**
    * **Stage 1 (T1):** The parent **Agent Blueprint** presents the Google SPIFFE assertion to Entra's `/token` endpoint with `scope=api://AzureADTokenExchange/.default` and `fmi_path=<AgentIdentityId>`. Entra validates the Federated Identity Credential (FIC) trust and returns an exchange token T1.
    * **Stage 2 (TR):** The child **Agent Identity** uses T1 as a client assertion to obtain its autonomous enterprise identity token.
 3. **Google STS Workload Identity Federation:**

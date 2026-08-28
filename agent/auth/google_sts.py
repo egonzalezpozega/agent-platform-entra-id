@@ -14,7 +14,7 @@
 
 """Google Cloud Security Token Service (STS) Module.
 
-Exchanges a Microsoft Entra Agent ID token (ID 2b) with Google Cloud STS using OAuth 2.0 Token Exchange (RFC 8693) to produce a Google Access Token bound to the Entra Principal.
+Exchanges a Microsoft Entra Agent ID token with Google Cloud STS using OAuth 2.0 Token Exchange (RFC 8693) to produce a Google Access Token bound to the Entra Principal.
 """
 
 import logging
@@ -37,7 +37,7 @@ def exchange_entra_for_google_sts_token(
     """Exchanges an Entra Agent ID token for a Google federated access token.
 
     Args:
-        entra_token: Entra Agent ID access or ID token (ID 2b).
+        entra_token: Entra Agent ID access or ID token.
         project_number: GCP Project Number hosting the Workload Identity Pool.
         pool_id: ID of the Workload Identity Pool.
         provider_id: ID of the Workload Identity Provider configured for Entra.

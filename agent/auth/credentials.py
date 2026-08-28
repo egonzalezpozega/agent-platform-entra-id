@@ -30,11 +30,11 @@ logger = logging.getLogger(__name__)
 
 
 class EntraFederatedCredentials(google.auth.credentials.Credentials):
-    """Google Cloud Credentials implementation that authenticates via Entra Agent ID (ID-2).
+    """Google Cloud Credentials implementation that authenticates via Federated Entra Agent Identity.
 
     Chaining Workflow:
-    1. Base Google Credential (ID 2a) ->
-    2. Microsoft Entra Agent ID Token (ID 2b) ->
+    1. Base Google Credential ->
+    2. Microsoft Entra Agent ID Token ->
     3. Google STS Federated Token ->
     4. Google Cloud IAM Authorization (attributed to Entra Principal).
     """
@@ -78,13 +78,13 @@ class EntraFederatedCredentials(google.auth.credentials.Credentials):
             }
             return
 
-        # 1. Step 1: Bootstrap Google ID Token (ID 2a)
-        logger.info("Step 1: Acquiring Google base bootstrap credential (ID 2a)...")
+        # 1. Step 1: Bootstrap Google ID Token
+        logger.info("Step 1: Acquiring Google base bootstrap credential...")
         self._bootstrap_token = get_google_bootstrap_token()
 
-        # 2. Step 2: Exchange with Microsoft Entra ID (ID 2b)
+        # 2. Step 2: Exchange with Microsoft Entra ID
         scope = self.config.entra_scope or f"api://{self.config.entra_client_id}/.default"
-        logger.info("Step 2: Federating to Microsoft Entra for Entra Agent ID token (ID 2b) with scope '%s'...", scope)
+        logger.info("Step 2: Federating to Microsoft Entra for Entra Agent ID token with scope '%s'...", scope)
         entra_res = exchange_google_for_entra_token(
             google_assertion=self._bootstrap_token,
             tenant_id=self.config.entra_tenant_id,

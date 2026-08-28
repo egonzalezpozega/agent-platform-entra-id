@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Microsoft Entra Agent ID (ID 2b) Token Exchange Module.
+"""Microsoft Entra Agent ID Token Exchange Module.
 
-Exchanges a Google bootstrap assertion (ID 2a) with Microsoft Entra ID via Workload Identity Federation (RFC 7523) to obtain an Entra Agent ID token.
+Exchanges a Google bootstrap assertion with Microsoft Entra ID via Workload Identity Federation (RFC 7523) to obtain an Entra Agent ID token.
 """
 
 import logging
@@ -40,7 +40,7 @@ def exchange_google_for_entra_token(
     Step 2: Agent identity requests resource access token using T1 as client assertion.
 
     Args:
-        google_assertion: Signed Google OIDC ID token (ID 2a).
+        google_assertion: Signed Google OIDC ID token.
         tenant_id: Microsoft Entra Directory (Tenant) ID.
         client_id: Application (Client) ID of the Entra Agent Blueprint.
         agent_identity_id: Client ID / Object ID of the instantiated Agent Identity.
@@ -128,7 +128,7 @@ def exchange_google_for_entra_token(
         return t1_data
 
     token_data = res2.json()
-    logger.info("Successfully acquired Entra Agent ID resource token (ID 2b).")
+    logger.info("Successfully acquired Entra Agent ID resource token.")
     return token_data
 
 

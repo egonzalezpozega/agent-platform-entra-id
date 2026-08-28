@@ -21,7 +21,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # 1. Google Agent Identity (ID 2a - Bootstrap Identity)
+    # 1. Google Agent Identity (Bootstrap Identity)
     gcp_project_id: str = "your-gcp-project-id"
     gcp_project_number: Optional[str] = "123456789012"
     gcp_region: str = "us-central1"
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     wif_pool_id: str = "entra-agent-pool"
     wif_provider_id: str = "entra-oidc-provider"
 
-    # 3. Microsoft Entra Agent ID (ID 2b - Enterprise Identity)
+    # 3. Microsoft Entra Agent ID (Enterprise Federated Identity)
     entra_tenant_id: str = "00000000-0000-0000-0000-000000000000"
     entra_client_id: str = "00000000-0000-0000-0000-000000000000"
     entra_agent_object_id: str = "00000000-0000-0000-0000-000000000000"

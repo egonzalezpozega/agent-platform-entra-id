@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for the Entra Agent ID (ID-2) authentication and token-chaining flow."""
+"""Unit tests for the Federated Entra Agent Identity authentication and token-chaining flow."""
 
 from unittest.mock import patch, MagicMock
 import pytest
