@@ -10,15 +10,15 @@ This repository demonstrates the integration of **Microsoft Entra Agent ID** wit
                                       CROSS-CLOUD IDENTITY FEDERATION
                      ┌─────────────────────────────────────────────────────────────┐
                      │                                                             │
-┌────────────────────┼──────────────┐                               ┌──────────────┼──────────────────┐
-│ Google Cloud Agent │ Runtime      │                               │ Microsoft    │ Entra ID         │
-│                    ▼              │                               │              ▼                  │
+┌────────────────────┼──────────────┐                               ┌──────────────┼──────────────────-┐
+│ Google Cloud Agent │ Runtime      │                               │ Microsoft    │ Entra ID          │
+│                    ▼              │                               │              ▼                   │
 │   ┌───────────────────────────┐   │  1. SPIFFE Token Assertion    │   ┌───────────────────────────┐  │
-│   │   Agent Runtime Metadata  │──────────────────────────────────────▶│ Microsoft Entra Blueprint  │  │
+│   │   Agent Runtime Metadata  │──────────────────────────────────────▶│ Microsoft Entra Blueprint │  │
 │   │    (SPIFFE Subject ID)    │   │                               │   │ (Federated Credential FIC)│  │
 │   └───────────────────────────┘   │                               │   └─────────────┬─────────────┘  │
 │                                   │                               │                 │ 2. Issues      │
-│   ┌───────────────────────────┐   │  3. Exchanges Entra Token     │                 ▼                │
+│   ┌───────────────────────────┐   │  3. Exchanges Entra Token     │    _____________▼_____________   │
 │   │  Google STS / WIF Pool    │◀──────────────────────────────────────│ Child Agent Identity (ID) │  │
 │   │ (Subject: ENTRA_AGENT_ID) │   │     (fmi_path exchange)       │   │  (Autonomous Bearer Token)│  │
 │   └─────────────┬─────────────┘   │                               │   └───────────────────────────┘  │
