@@ -18,16 +18,15 @@ This codelab guides you through integrating **Microsoft Entra Agent ID** with **
 ### What You Will Build
 In this codelab, you will build and deploy a pure Python ADK agent that:
 1. Runs inside **Agent Runtime** with native **Agent Identity**.
-
 2. Obtains a cryptographically verified **Google Agent Runtime SPIFFE assertion**.
-3. Federates with **Microsoft Entra ID** using the official **Autonomous App OAuth Flow** to acquire an enterprise **Entra Agent ID token**.
+3. Federates with **Microsoft Entra ID** using the official [Microsoft Entra Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow) (leveraging [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) for JWT Bearer Client Authentication and [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) for Token Exchange) to acquire an enterprise **Entra Agent ID token**.
 4. Exchanges the Entra token back with **Google Cloud Workload Identity Federation (WIF / STS)**.
 5. Accesses, lists, and reads enterprise documents from **Google Cloud Storage** under the fine-grained IAM principal of the Microsoft Entra Agent Identity.
 
 ### What You Will Learn
 * How the **External Agent Identity** pattern works across Google Cloud and Microsoft Entra.
 * How to configure Federated Identity Credentials (FIC) in Microsoft Entra Agent ID without static secrets.
-* How the Entra **Token Exchange Flow** and **Google STS WIF** work together.
+* How the Entra [Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow) ([RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) / [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693)) and **Google STS WIF** work together.
 
 ---
 
@@ -273,7 +272,7 @@ The ADK agent implementation includes token exchange modules and custom Google c
 
 ### 1. Entra Autonomous Token Exchange (`agent/auth/entra_exchange.py`)
 
-Implements the 2-step Autonomous App Flow specified in Microsoft Entra documentation:
+Implements the 2-step [Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow) ([RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523)) specified in Microsoft Entra documentation:
 
 ```python
 import logging

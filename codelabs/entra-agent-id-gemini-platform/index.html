@@ -52,7 +52,7 @@
 <ol type="1">
 <li>Runs inside <strong>Agent Runtime</strong> with native <strong>Agent Identity</strong>.</li>
 <li>Obtains a cryptographically verified <strong>Google Agent Runtime SPIFFE assertion</strong>.</li>
-<li>Federates with <strong>Microsoft Entra ID</strong> using the official <strong>Autonomous App OAuth Flow</strong> to acquire an enterprise <strong>Entra Agent ID token</strong>.</li>
+<li>Federates with <strong>Microsoft Entra ID</strong> using the official <a href="https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow" target="_blank">Microsoft Entra Autonomous App OAuth Flow</a> (leveraging <a href="https://datatracker.ietf.org/doc/html/rfc7523" target="_blank">RFC 7523</a> for JWT Bearer Client Authentication and <a href="https://datatracker.ietf.org/doc/html/rfc8693" target="_blank">RFC 8693</a> for Token Exchange) to acquire an enterprise <strong>Entra Agent ID token</strong>.</li>
 <li>Exchanges the Entra token back with <strong>Google Cloud Workload Identity Federation (WIF / STS)</strong>.</li>
 <li>Accesses, lists, and reads enterprise documents from <strong>Google Cloud Storage</strong> under the fine-grained IAM principal of the Microsoft Entra Agent Identity.</li>
 </ol>
@@ -60,7 +60,7 @@
 <ul>
 <li>How the <strong>External Agent Identity</strong> pattern works across Google Cloud and Microsoft Entra.</li>
 <li>How to configure Federated Identity Credentials (FIC) in Microsoft Entra Agent ID without static secrets.</li>
-<li>How the Entra <strong>Token Exchange Flow</strong> and <strong>Google STS WIF</strong> work together.</li>
+<li>How the Entra <a href="https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow" target="_blank">Autonomous App OAuth Flow</a> (<a href="https://datatracker.ietf.org/doc/html/rfc7523" target="_blank">RFC 7523</a> / <a href="https://datatracker.ietf.org/doc/html/rfc8693" target="_blank">RFC 8693</a>) and <strong>Google STS WIF</strong> work together.</li>
 </ul>
 
 
@@ -286,7 +286,7 @@ gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
         <p><strong>Note: </strong><em>For your review only, this is automatically deployed by the script.</em></p>
 <p>The ADK agent implementation includes token exchange modules and custom Google credentials providers.</p>
 <h2 is-upgraded>1. Entra Autonomous Token Exchange (<code>agent/auth/entra_exchange.py</code>)</h2>
-<p>Implements the 2-step Autonomous App Flow specified in Microsoft Entra documentation:</p>
+<p>Implements the 2-step <a href="https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow" target="_blank">Autonomous App OAuth Flow</a> (<a href="https://datatracker.ietf.org/doc/html/rfc7523" target="_blank">RFC 7523</a>) specified in Microsoft Entra documentation:</p>
 <pre><code language="language-python" class="language-python">import logging
 from typing import Dict, Any, Optional
 import requests
