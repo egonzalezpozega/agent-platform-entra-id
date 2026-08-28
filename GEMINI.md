@@ -35,3 +35,13 @@ Developer customization is strictly scoped to:
 ### 5. Git & Version Control Policy
 - **NEVER** commit or push code to the Git repository unless explicitly instructed to do so by the user.
 
+### 6. Codelab Documentation & `claat` Best Practices
+- **NEVER** manually edit codelab HTML code (`docs/index.html` or `codelabs/*/index.html`).
+- Always author and update the codelab markdown in `codelabs/<name>.md`.
+- Always generate exported HTML using the standard `claat export` workflow:
+  ```bash
+  cd codelabs
+  claat export <codelab-file>.md
+  cp -r <exported-dir>/* ../docs/
+  ```
+
