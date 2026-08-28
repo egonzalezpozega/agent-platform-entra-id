@@ -31,3 +31,7 @@ Developer customization is strictly scoped to:
 - When deploying to **Agent Runtime** (`--deployment-target agent_runtime`):
   - Do NOT pass `--service-account` when `--agent-identity` is enabled (Agent Runtime uses `AGENT_IDENTITY`).
   - Serving routes are mounted automatically by `get_fast_api_app` and `attach_reasoning_engine_routes(app)` to ensure 100% compatibility with the Vertex AI Console Playground, `agents-cli run --mode adk`, and `agents-cli playground`.
+
+### 5. Git & Version Control Policy
+- **NEVER** commit or push code to the Git repository unless explicitly instructed to do so by the user.
+

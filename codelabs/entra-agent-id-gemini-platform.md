@@ -187,13 +187,9 @@ gcloud ai reasoning-engines list \
 3. Click **+ Add credential** and select **Other issuer**.
 4. Fill in the trust parameters:
    * **Issuer:**
-     ```text
-     https://sts.googleapis.com/v1/organizations/<your-google-org-id>/locations/global/workloadIdentityPools/agents.global.org-<your-google-org-id>.system.id.goog
-     ```
+     <p><code>https://sts.googleapis.com/v1/organizations/<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>/locations/global/workloadIdentityPools/agents.global.org-<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>.system.id.goog</code></p>
    * **Subject identifier:**
-     ```text
-     spiffe://agents.global.org-<your-google-org-id>.system.id.goog/resources/aiplatform/projects/<your-project-number>/locations/us-central1/reasoningEngines/<your-reasoning-engine-id>
-     ```
+     <p><code>spiffe://agents.global.org-<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>.system.id.goog/resources/aiplatform/projects/<span style="color: #d93025; font-weight: bold;">&lt;your-project-number&gt;</span>/locations/us-central1/reasoningEngines/<span style="color: #d93025; font-weight: bold;">&lt;your-reasoning-engine-id&gt;</span></code></p>
    * **Audience:** `api://AzureADTokenExchange`
    * **Name:** `GoogleAgentRuntimeTrust`
 5. Click **Save**.

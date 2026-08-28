@@ -216,12 +216,8 @@ gcloud ai reasoning-engines list \
 <li>In the Blueprint overview, select <strong>Certificates &amp; secrets</strong> → <strong>Federated credentials</strong>.</li>
 <li>Click <strong>+ Add credential</strong> and select <strong>Other issuer</strong>.</li>
 <li>Fill in the trust parameters: <ul>
-<li><strong>Issuer:</strong><pre><code language="language-text" class="language-text">https://sts.googleapis.com/v1/organizations/&lt;your-google-org-id&gt;/locations/global/workloadIdentityPools/agents.global.org-&lt;your-google-org-id&gt;.system.id.goog
-</code></pre>
-</li>
-<li><strong>Subject identifier:</strong><pre><code language="language-text" class="language-text">spiffe://agents.global.org-&lt;your-google-org-id&gt;.system.id.goog/resources/aiplatform/projects/&lt;your-project-number&gt;/locations/us-central1/reasoningEngines/&lt;your-reasoning-engine-id&gt;
-</code></pre>
-</li>
+<li><strong>Issuer:</strong><code>https://sts.googleapis.com/v1/organizations/<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>/locations/global/workloadIdentityPools/agents.global.org-<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>.system.id.goog</code></li>
+<li><strong>Subject identifier:</strong><code>spiffe://agents.global.org-<span style="color: #d93025; font-weight: bold;">&lt;your-google-org-id&gt;</span>.system.id.goog/resources/aiplatform/projects/<span style="color: #d93025; font-weight: bold;">&lt;your-project-number&gt;</span>/locations/us-central1/reasoningEngines/<span style="color: #d93025; font-weight: bold;">&lt;your-reasoning-engine-id&gt;</span></code></li>
 <li><strong>Audience: </strong><code>api://AzureADTokenExchange</code></li>
 <li><strong>Name: </strong><code>GoogleAgentRuntimeTrust</code></li>
 </ul>
