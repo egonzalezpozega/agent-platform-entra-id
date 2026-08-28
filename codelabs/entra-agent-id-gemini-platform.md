@@ -8,29 +8,36 @@ Feedback Link: https://github.com/egonzalezpozega/agent-platform-entra-id/issues
 
 # Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform
 
-## Overview
+## Introduction
 Duration: 0:05:00
 
 Enterprise AI agents require robust identity, authentication, and governance. When agents perform autonomous actions across multi-cloud environments—such as accessing enterprise documents in Google Cloud Storage while being governed by enterprise policies in Microsoft Entra—a unified, secret-free identity architecture is critical.
 
 This codelab guides you through integrating **Microsoft Entra Agent ID** with **Agent Platform** (using the Agent Development Kit - ADK and Agent Runtime).
 
-### What You Will Build
-In this codelab, you will build and deploy a pure Python ADK agent that:
+### What you'll build
+In this codelab, you will build and deploy a Python ADK agent that:
 1. Runs inside **Agent Runtime** with native **Agent Identity**.
 2. Obtains a cryptographically verified **Google Agent Runtime SPIFFE assertion**.
 3. Federates with **Microsoft Entra ID** using the official [Microsoft Entra Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow) (leveraging [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) for JWT Bearer Client Authentication and [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) for Token Exchange) to acquire an enterprise **Entra Agent ID token**.
 4. Exchanges the Entra token back with **Google Cloud Workload Identity Federation (WIF / STS)**.
 5. Accesses, lists, and reads enterprise documents from **Google Cloud Storage** under the fine-grained IAM principal of the Microsoft Entra Agent Identity.
 
-### What You Will Learn
+### What you'll learn
 * How the **External Agent Identity** pattern works across Google Cloud and Microsoft Entra.
 * How to configure Federated Identity Credentials (FIC) in Microsoft Entra Agent ID without static secrets.
 * How the Entra [Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow) ([RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) / [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693)) and **Google STS WIF** work together.
+* How to deploy and test an ADK agent on Google Cloud Agent Runtime.
+
+### What you'll need
+* A Google Cloud Project with billing enabled.
+* A Microsoft Entra ID tenant with the **Microsoft Entra Agent ID (Preview)** feature enabled.
+* Permissions to create **Agent Blueprints** and **Agent Identities** in Microsoft Entra.
+* Local development tools: Python 3.11+, `uv` package manager, `gcloud` CLI, and `google-agents-cli`.
 
 ---
 
-## Architecture & Identity Topology
+## Multi-Cloud Architecture & Identity Topology
 Duration: 0:05:00
 
 ### The Multi-Cloud Identity Architecture
@@ -42,7 +49,7 @@ The diagram below illustrates the two primary identity execution paths for AI ag
 ### Choosing Your Identity Flow
 
 * **Flow 1: Native Google Cloud Agent Identity (Top Flow)**
-  * When agents operate purely within Google Cloud, the agent boots with Agent Runtime's native cryptographic SPIFFE identity (`spiffe://...`) and directly requests authorization from Google Cloud IAM. This is the standard, most common flow for native GCP workloads.
+  * When agents operate purely within Google Cloud, the agent boots with Agent Runtime's native cryptographic SPIFFE identity (`spiffe://...`) and directly requests authorization from Google Cloud IAM. This is the standard flow for native GCP workloads.
 * **Flow 2: Bringing External Agent Identities via Microsoft Entra ID (Bottom Flow - Focus of this Codelab)**
   * For enterprise organizations with centralized multi-cloud governance in Microsoft Entra, this codelab focuses on bringing external Agent Identities from **Microsoft Entra Agent ID**. The agent bootstraps on Agent Runtime using its Google assertion, federates outward to establish its autonomous identity in Microsoft Entra, and then federates back into Google Cloud Workload Identity Federation (WIF) so that all Google Cloud IAM decisions (Cloud Storage access) are governed under the Microsoft Entra Agent Identity.
 
@@ -72,37 +79,10 @@ The diagram below illustrates the two primary identity execution paths for AI ag
      ```
    * Google Cloud IAM authorizes Cloud Storage access solely for this Entra principal.
 
----
-
-## Prerequisites & Environment Setup
-Duration: 0:05:00
-
-### 1. Google Cloud Environment
-* A Google Cloud Project with billing enabled (e.g., `my-agent-entra-project`).
-* `gcloud` CLI installed and authenticated:
-  ```bash
-  gcloud auth login
-  gcloud auth application-default login
-  ```
-
-### 2. Microsoft Entra Tenant
-* Access to a Microsoft Entra ID tenant with the **Microsoft Entra Agent ID (Preview)** feature enabled.
-* Permissions to create **Agent Blueprints** and **Agent Identities** (or Application Administrator / Cloud Application Administrator roles).
-
-### 3. Local Development Tools
-* Python 3.11+
-* `uv` fast Python package manager:
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
-* Google `agents-cli`:
-  ```bash
-  uv tool install google-agents-cli
-  ```
 
 ---
 
-## Create Microsoft Entra Agent Blueprint & Identity (Manual Setup)
+## Create Microsoft Entra Blueprint & Agent Identity
 Duration: 0:05:00
 
 In this step, configure Microsoft Entra ID in the Microsoft Entra Admin Center to instantiate the parent Blueprint and the child Agent Identity.
@@ -125,7 +105,7 @@ In this step, configure Microsoft Entra ID in the Microsoft Entra Admin Center t
 
 ---
 
-## One-Click Deploy (Google Cloud Components)
+## Deploy Google Cloud Components & Agent Runtime
 Duration: 0:05:00
 
 We provide an automated, one-click deployment solution that handles all Google Cloud components with a single command.
@@ -138,21 +118,20 @@ The deployment script automatically:
 5. Updates configuration files (`.env` and `agents-cli-manifest.yaml`).
 6. Deploys the agent directly to **Agent Runtime** with native **Agent Identity**.
 
-
-Execute the included automated deployment script:
+Execute the automated deployment script:
 
 ```bash
 chmod +x scripts/deploy_all.sh
 ./scripts/deploy_all.sh
 ```
 
-The script will prompt for your IDs if not already set in `.env`:
-* Google Cloud Project ID
-* Microsoft Entra Tenant ID
-* Microsoft Entra Blueprint Application (Client) ID
-* Microsoft Entra Agent Identity Object ID
+The script prompts for your configuration parameters if not already set in `.env`:
+* **Google Cloud Project ID**
+* **Microsoft Entra Tenant ID**
+* **Microsoft Entra Blueprint Application (Client) ID**
+* **Microsoft Entra Agent Identity Object ID**
 
-Once deployment completes, note the **Reasoning Engine ID** (or Reasoning Engine URI) displayed at the end of the script output.
+> **Note:** Once deployment completes, copy the **Reasoning Engine ID** displayed in the script summary for the next step.
 
 ---
 
@@ -199,9 +178,9 @@ gcloud ai reasoning-engines list \
 ## Understanding Workload Identity Federation & IAM (For Review)
 Duration: 0:05:00
 
-> **Note:** *For your review only, this is automatically deployed by the script.*
+> **Note:** *For your review only, this configuration is automatically provisioned during automated deployment.*
 
-The following section explains the underlying Google Cloud WIF configuration provisioned during the automated deployment.
+The following section explains the underlying Google Cloud WIF configuration provisioned during the deployment.
 
 ### 1. Workload Identity Pool
 
@@ -262,7 +241,7 @@ gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
 ## Understanding ADK Agent Code & Token Adapters (For Review)
 Duration: 0:06:00
 
-> **Note:** *For your review only, this is automatically deployed by the script.*
+> **Note:** *For your review only, this implementation is packaged and deployed automatically.*
 
 The ADK agent implementation includes token exchange modules and custom Google credentials providers.
 
@@ -410,7 +389,8 @@ REASONING_ENGINE_ID=$(gcloud ai reasoning-engines list \
   --region=us-central1 \
   --project=$GCP_PROJECT_ID \
   --format="value(name)" \
-  --limit=1 | awk -F'/' '{print $NF}')
+  --limit=1 | awk -F'/' '{print $NF}'
+```
 
 GCP_PROJECT_NUMBER=$(gcloud projects describe $GCP_PROJECT_ID \
   --format="value(projectNumber)")
@@ -433,33 +413,39 @@ agents-cli run \
 ```text
 [user]: Inspect your active identity, list documents from Cloud Storage, and read 'sales_audit_2026.txt'.
 
-[agent_platform_entra_id]: Here are the results of your requests:
-
-**Agent Identity Inspection:**
-* Status: Verified
-* Active GCP Principal: principal://iam.googleapis.com/projects/.../workloadIdentityPools/entra-agent-pool/subject/e5a1e0b3-ed9c-4fa4-84cb-050128d063a8
-* Entra Agent Client ID: a46680b6-9643-4c22-af5e-e9e7303a6471
+[agent_platform_entra_id]: 
+🔐 **Identity Verification Status**
+* Status: ✅ Verified
+* Active Principal: principal://iam.googleapis.com/projects/374927797243/locations/global/workloadIdentityPools/entra-agent-pool/subject/e5a1e0b3-ed9c-4fa4-84cb-050128d063a8
+* Entra Client ID: a46680b6-9643-4c22-af5e-e9e7303a6471
 * Entra Tenant ID: cc2c59dc-7f33-441c-bfac-ec4e73182d0a
 
-**Cloud Storage Documents (GCS):**
-* Bucket: my-agent-entra-docs
-* Files Listed:
+📂 **Cloud Storage Documents**
+* Bucket: epbgonzalez-agent-gateway-entra-agent-docs
+* Files:
   - entra_federation_guide.txt
   - sales_audit_2026.txt
 
-
-**Document Content ('sales_audit_2026.txt'):**
+📄 **Document Content: sales_audit_2026.txt**
 "Sales audit summary for Q1 2026: All transactions verified against Microsoft Entra Agent ID governance."
 ```
 
 ---
 
-## Summary & Best Practices
+## Congratulations
 Duration: 0:02:00
 
 Congratulations! You have successfully built and deployed a multi-cloud enterprise AI agent governed by **Microsoft Entra Agent ID** running on **Agent Platform**.
 
-### What You Achieved
-* **Zero Secret Storage:** Authenticated across Google Cloud and Microsoft Entra entirely via cryptographic OIDC assertions and Workload Identity Federation (RFC 7523 / RFC 8693).
+### What you've learned
+* **Zero Static Secret Storage:** Authenticated across Google Cloud and Microsoft Entra entirely via cryptographic OIDC assertions and Workload Identity Federation (RFC 7523 / RFC 8693).
 * **Centralized Governance:** Governed agent lifecycle and identity within Microsoft Entra ID while deploying on Google Cloud's enterprise Agent Runtime.
 * **Strict Least-Privilege IAM:** Google Cloud Storage resources authorized access exclusively to the specific Microsoft Entra Agent Identity Object ID.
+
+### Further reading & resources
+* [Microsoft Entra Agent ID Documentation](https://learn.microsoft.com/en-us/entra/agent-id/)
+* [Microsoft Entra Autonomous App OAuth Flow](https://learn.microsoft.com/en-us/entra/agent-id/agent-autonomous-app-oauth-flow)
+* [RFC 7523 - JWT Profile for OAuth 2.0 Client Authentication](https://datatracker.ietf.org/doc/html/rfc7523)
+* [RFC 8693 - OAuth 2.0 Token Exchange](https://datatracker.ietf.org/doc/html/rfc8693)
+* [Google Cloud Agent Development Kit (ADK) Documentation](https://google.github.io/agent-development-kit/)
+* [Google Cloud Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
