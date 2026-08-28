@@ -108,6 +108,17 @@ In this step, configure Microsoft Entra ID in the Microsoft Entra Admin Center t
 ## Deploy Google Cloud Components & Agent Runtime
 Duration: 0:05:00
 
+### 1. Clone the Repository
+
+Clone the project repository to your local machine or Google Cloud Shell environment and navigate to the project directory:
+
+```bash
+git clone https://github.com/egonzalezpozega/agent-platform-entra-id.git
+cd agent-platform-entra-id
+```
+
+### 2. Run the Automated Deployment
+
 We provide an automated, one-click deployment solution that handles all Google Cloud components with a single command.
 
 The deployment script automatically:
@@ -132,6 +143,7 @@ The script prompts for your configuration parameters if not already set in `.env
 * **Microsoft Entra Agent Identity Object ID**
 
 > **Note:** Once deployment completes, copy the **Reasoning Engine ID** displayed in the script summary for the next step.
+
 
 ---
 
