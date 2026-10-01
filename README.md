@@ -5,7 +5,7 @@
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Platform%20%26%20Agent%20Runtime-blue?logo=google-cloud)](https://cloud.google.com/)
 [![Microsoft Entra](https://img.shields.io/badge/Identity-Microsoft%20Entra%20Agent%20ID-0078D4?logo=microsoft-azure)](https://learn.microsoft.com/en-us/entra/agent-id/)
 [![ADK](https://img.shields.io/badge/Agent-Google%20ADK%20Python-EA4335?logo=python)](https://google.github.io/agent-development-kit/)
-[![Interactive Guide](https://img.shields.io/badge/Guide-Interactive%20HTML-brightgreen?logo=html5)](https://cloud-gtm.github.io/agent-identity-federation/)
+[![Interactive Guide](https://img.shields.io/badge/Guide-Interactive%20HTML-brightgreen?logo=html5)](https://egonzalezpozega.github.io/agent-platform-entra-id/)
 [![Documentation](https://img.shields.io/badge/Format-Codelab%20Markdown-green)](#repository-structure)
 
 This repository contains a comprehensive, step-by-step **Google Cloud Codelab** that guides you through integrating **Microsoft Entra Agent ID** with **Google Cloud Agent Runtime** and **Google Cloud Workload Identity Federation (WIF)** for secret-free, autonomous multi-cloud AI agent governance.
@@ -31,7 +31,7 @@ In this lab, you learn how to:
 
 This repository includes an interactive, browser-based version of the codelab:
 
-👉 **[Hosted Live Codelab](https://cloud-gtm.github.io/agent-identity-federation/)** (or local [`docs/index.html`](docs/index.html))
+👉 **[Hosted Live Codelab](https://egonzalezpozega.github.io/agent-platform-entra-id/)** (or local [`docs/index.html`](docs/index.html))
 
 **Features:**
 - 📋 **Ready-to-copy code blocks**: One-click copy buttons with instant feedback for all `gcloud`, `agents-cli`, and configuration commands.
@@ -134,7 +134,7 @@ This repository includes an interactive, browser-based version of the codelab:
 ## 🛠 Quick Start / How to Run
 
 ### Option A: Interactive HTML Guide (Recommended)
-Simply open the **[Live Hosted Codelab](https://cloud-gtm.github.io/agent-identity-federation/)** or open [`docs/index.html`](docs/index.html) in your browser for the full interactive experience.
+Simply open the **[Live Hosted Codelab](https://egonzalezpozega.github.io/agent-platform-entra-id/)** or open [`docs/index.html`](docs/index.html) in your browser for the full interactive experience.
 
 ### Option B: Markdown Guide
 1. Open [`codelabs/entra-agent-id-gemini-platform.md`](codelabs/entra-agent-id-gemini-platform.md) in your editor or markdown previewer.

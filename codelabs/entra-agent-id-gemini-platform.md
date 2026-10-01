@@ -4,7 +4,7 @@ categories: AI, Security, Multi-Cloud
 tags: ADK, Agent Runtime, Entra ID, Identity, Cloud Storage, WIF
 status: Published
 authors: Google Cloud & Microsoft Entra Integration Team
-Feedback Link: https://github.com/cloud-gtm/agent-identity-federation/issues
+Feedback Link: https://github.com/egonzalezpozega/agent-platform-entra-id/issues
 
 # Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform
 
@@ -113,8 +113,8 @@ Duration: 0:05:00
 Clone the project repository to your local machine or Google Cloud Shell environment and navigate to the project directory:
 
 ```bash
-git clone https://github.com/cloud-gtm/agent-identity-federation.git
-cd agent-identity-federation
+git clone https://github.com/egonzalezpozega/agent-platform-entra-id.git
+cd agent-platform-entra-id
 ```
 
 ### 2. Run the Automated Deployment

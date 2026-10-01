@@ -3,7 +3,7 @@
   "format": "html",
   "prefix": ".",
   "mainga": "UA-49880327-14",
-  "updated": "2026-08-28T11:58:30-05:00",
+  "updated": "2026-10-01T14:47:12-05:00",
   "id": "entra-agent-id-gemini-platform",
   "duration": 42,
   "title": "Multi-Cloud Agent Governance: Integrating Microsoft Entra Agent ID with Agent Platform",
@@ -27,6 +27,6 @@
     "identity",
     "wif"
   ],
-  "feedback": "https://github.com/cloud-gtm/agent-identity-federation/issues",
+  "feedback": "https://github.com/egonzalezpozega/agent-platform-entra-id/issues",
   "url": "entra-agent-id-gemini-platform"
 }
