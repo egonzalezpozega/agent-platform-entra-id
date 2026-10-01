@@ -38,10 +38,11 @@ Developer customization is strictly scoped to:
 ### 6. Codelab Documentation & `claat` Best Practices
 - **NEVER** manually edit codelab HTML code (`docs/index.html` or `codelabs/*/index.html`).
 - Always author and update the codelab markdown in `codelabs/<name>.md`.
-- Always generate exported HTML using the standard `claat export` workflow:
+- Always generate exported HTML using the self-hosted `claat export` workflow (or `./scripts/build_codelab.sh`):
   ```bash
   cd codelabs
-  claat export <codelab-file>.md
+  claat export -prefix . <codelab-file>.md
+  cp -r claat-public <exported-dir>/
   cp -r <exported-dir>/* ../docs/
   ```
 
